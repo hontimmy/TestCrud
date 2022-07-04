@@ -19,10 +19,11 @@ Route::get('/', function () {
 
 
 
-Route::resource('news', App\Http\Controllers\NewsController::class);
 
 Route::get('cronjob', [App\Http\Controllers\NewsController::class, 'CronJob'])->name('cronjob');
 
 Auth::routes();
+
+Route::resource('news', App\Http\Controllers\NewsController::class);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

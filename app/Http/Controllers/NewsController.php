@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\CreateNewsRequest;
 
 
 use App\Models\News;
@@ -11,19 +12,21 @@ use App\Events\NewsCreated;
 
 
 class NewsController extends Controller
-{
+{	
+	protected $news;
+	
+    public function __construct(News $news){
+		
+        $this->news = $news;
+    }
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-		//
-		$news = News::all();
-		 return view('news.index')
-		 ->with('news', $news);
-
+    {		
+		return response()->json($this->news->paginate());
     }
 
     /**
@@ -42,30 +45,23 @@ class NewsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateNewsRequest $request)
     {	
 		$data = $request->all();
 		$data['user_id'] = $request->user()->id;
         
-		// Form Validation
-        $validator = Validator::make($data, [
-			'user_id' => 'required',
-            'title' => 'required',
-            'content' => 'required'
-        ]);
-		
-		 if($validator->fails()){
-			 
-            return response([$validator->messages()->getMessages(), 'Validation Error']);
-        }
-
 		// Create News
-        $news = News::create($data);
+        $news = $this->news::create($data);   // creates and return news
 		
 		// Fire News Event
 		broadcast(new NewsCreated($news))->toOthers();
 
-        return redirect('/news/'.$news->id);
+        return response()
+        ->json([
+            'data' =>  $news,
+            'message' => 'News created'
+        ], 201);
+
 
     }
 
@@ -77,7 +73,7 @@ class NewsController extends Controller
      */
     public function show(News $news)
     {
-        return view('news.show',compact('news'));
+        return response()->json($news);
 
     }
 
@@ -99,11 +95,13 @@ class NewsController extends Controller
      * @param  \App\Models\News  $news
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, News $news)
+    public function update(CreateNewsRequest $request, News $news)
     {
-        $news->update($request->all());
+		$data = $request->all();
 		
-        return redirect('/news/'.$news->id);
+        $news->update($data);
+		
+		return response()->json($news);
 
     }
 
@@ -116,8 +114,8 @@ class NewsController extends Controller
     public function destroy(News $news)
     {
         $news->delete();
-
-        return redirect("/news");
+		
+        return response()->json(null,204);
     }
 	
 	

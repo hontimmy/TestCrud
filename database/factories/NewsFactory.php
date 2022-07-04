@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Faker\Generator as Faker;
-
+use App\Models\User;
 
 class NewsFactory extends Factory
 {
@@ -16,9 +16,9 @@ class NewsFactory extends Factory
     public function definition()
     {
 			return [
-				'title' => $faker->sentence,
-				'content' => $faker->paragraphs,
-				'user_id' => factory('App\User')->create()->id,
+				'user_id' => User::factory(),
+				'title' =>  $this->faker->sentence,
+				'content' =>  $this->faker->paragraphs,
 			];
 		}
 
